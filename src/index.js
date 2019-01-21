@@ -23,7 +23,7 @@ function setupEventListeners(player, renderer) {
 		const type = data.type;
 		if (type === "__annotations_restored_renderer_start") {
 			rendererUpdateIntervalId = setInterval(() => {
-				if (!video.paused()) {
+				if (!player.paused()) {
 					const videoTime = player.currentTime();
 					const updateEvent = new CustomEvent("__annotations_restored_renderer_update", {
 						detail: {videoTime}
