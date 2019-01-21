@@ -1,0 +1,1 @@
+cat src/annotationlib/AnnotationParser.js src/annotationlib/AnnotationRenderer.js src/index.js > dist/dist.js
