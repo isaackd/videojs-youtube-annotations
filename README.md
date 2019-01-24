@@ -6,6 +6,8 @@ HTML
 ```html
 <!-- VideoJS automatically places the video in a <div id="avideo"></div> -->
 <video id="avideo" class="video-js"></video>
+<!-- include the styles -->
+<link rel="stylesheet" type="text/css" href="dist.min.css">
 ```
 Javascript
 ```javascript
