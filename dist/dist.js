@@ -274,10 +274,10 @@ class AnnotationRenderer {
 
 	static get defaultAppearanceAttributes() {
 		return {
-			bgColor: 0,
+			bgColor: 0xFFFFFF,
 			bgOpacity: 0.70,
-			fgColor: 0xFFFFFF,
-			textSize: 2
+			fgColor: 0,
+			textSize: 3.15
 		};
 	}
 
@@ -328,6 +328,9 @@ class AnnotationRenderer {
 			const el = document.createElement("div");
 			el.classList.add("__cxt-ar-annotation__");
 
+			annotation.__element = el;
+			el.__anotation = annotation;
+
 			el.style.left = `${annotation.x}%`;
 			el.style.top = `${annotation.y}%`;
 
@@ -359,7 +362,12 @@ class AnnotationRenderer {
 				annotationAppearance.bgColor = annotation.bgColor;
 			}
 
-			el.style.fontSize = ((annotationAppearance.textSize / 100) * containerHeight) + "pt";
+			annotation.bgColor = annotationAppearance.bgColor;
+			annotation.bgOpacity = annotationAppearance.bgOpacity;
+			annotation.fgColor = annotationAppearance.fgColor;
+			annotation.textSize = annotationAppearance.textSize;
+
+			this.updateAnnotationTextSize(annotation);
 			el.style.color = `#${this.decimalToHex(annotationAppearance.fgColor)}`;
 
 			el.style.backgroundColor = this.getFinalAnnotationColor(annotationAppearance);
@@ -369,11 +377,6 @@ class AnnotationRenderer {
 			el.addEventListener("mouseleave", () => {
 				el.style.backgroundColor = this.getFinalAnnotationColor(annotationAppearance, false);
 			});
-
-			annotation.bgColor = annotationAppearance.bgColor;
-			annotation.bgOpacity = annotationAppearance.bgOpacity;
-			annotation.fgColor = annotationAppearance.fgColor;
-			annotation.textSize = annotationAppearance.textSize;
 
 			el.setAttribute("data-ar-type", annotation.type);
 
@@ -386,8 +389,6 @@ class AnnotationRenderer {
 
 			el.setAttribute("hidden", "");
 
-			annotation.__element = el;
-			el.__anotation = annotation;
 			this.annotationsContainer.append(el);
 		}
 	}
@@ -467,8 +468,8 @@ class AnnotationRenderer {
 
 	updateAnnotationTextSize(annotation, containerHeight) {
 		if (annotation.textSize) {
-			const textSize = (annotation.textSize / 100) * containerHeight - 3.5;
-			annotation.__element.style.fontSize = `${textSize}pt`;
+			const textSize = (annotation.textSize / 100) * containerHeight;
+			annotation.__element.style.fontSize = `${textSize}px`;
 		}
 	}
 	updateTextSize() {
@@ -511,8 +512,8 @@ class AnnotationRenderer {
 			window.dispatchEvent(new CustomEvent("__ar_seek_to", {detail: {seconds}}));
 		}
 		else if (annotationData.actionType === "url") {
-			window.location.href = annotationData.actionUrl;
-			// window.dispatchEvent(new CustomEvent("__ar_annotation_click", {detail: {url: annotationData.actionUrl}}));
+			// window.location.href = annotationData.actionUrl;
+			window.dispatchEvent(new CustomEvent("__ar_annotation_click", {detail: {url: annotationData.actionUrl}}));
 		}
 	}
 
