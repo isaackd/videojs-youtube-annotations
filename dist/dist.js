@@ -306,11 +306,9 @@ class AnnotationRenderer {
 		this.createAnnotationElements();
 
 		// in case the dom already loaded
-		this.updateTextSize();
-		this.updateCloseSize();
+		this.updateAllAnnotationSizes();
 		window.addEventListener("DOMContentLoaded", e => {
-			this.updateTextSize();
-			this.updateCloseSize();
+			this.updateAllAnnotationSizes();
 		});
 
 		this.updateInterval = updateInterval;
@@ -331,12 +329,6 @@ class AnnotationRenderer {
 			annotation.__element = el;
 			el.__anotation = annotation;
 
-			el.style.left = `${annotation.x}%`;
-			el.style.top = `${annotation.y}%`;
-
-			el.style.width = `${annotation.width}%`;
-			el.style.height = `${annotation.height}%`;
-
 			// close button
 			const closeButton = this.createCloseElement();
 			closeButton.addEventListener("click", e => {
@@ -346,7 +338,6 @@ class AnnotationRenderer {
 			el.append(closeButton);
 
 			// appearance
-			const containerHeight = this.container.getBoundingClientRect().height;
 			let annotationAppearance = this.constructor.defaultAppearanceAttributes;
 			if (!isNaN(annotation.textSize)) {
 				// text size calculations
@@ -367,7 +358,7 @@ class AnnotationRenderer {
 			annotation.fgColor = annotationAppearance.fgColor;
 			annotation.textSize = annotationAppearance.textSize;
 
-			this.updateAnnotationTextSize(annotation);
+			// this.updateAnnotationTextSize(annotation);
 			el.style.color = `#${this.decimalToHex(annotationAppearance.fgColor)}`;
 
 			el.style.backgroundColor = this.getFinalAnnotationColor(annotationAppearance);
@@ -479,11 +470,75 @@ class AnnotationRenderer {
 			this.updateAnnotationTextSize(annotation, containerHeight);
 		}
 	}
-
-	updateCloseSize() {
-		const containerHeight = this.container.getBoundingClientRect().height;
+	updateCloseSize(containerHeight) {
+		if (!containerHeight) containerHeight = this.container.getBoundingClientRect().height;
 		const multiplier = 0.0423;
 		this.annotationsContainer.style.setProperty("--annotation-close-size", `${containerHeight * multiplier}px`);
+	}
+	updateAnnotationDimensions(annotations, videoWidth, videoHeight) {
+		const playerWidth = this.container.getBoundingClientRect().width;
+		const playerHeight = this.container.getBoundingClientRect().height;
+
+		const widthDivider = playerWidth / videoWidth;
+		const heightDivider = playerHeight / videoHeight;
+
+		let scaledVideoWidth = playerWidth;
+		let scaledVideoHeight = playerHeight;
+
+		if (widthDivider % 1 !== 0 || heightDivider % 1 !== 0) {
+			// vertical bars
+			if (widthDivider > heightDivider) {
+				scaledVideoWidth = (playerHeight / videoHeight) * videoWidth;
+				scaledVideoHeight = playerHeight;
+			}
+			// horizontal bars
+			else if (heightDivider > widthDivider) {
+				scaledVideoWidth = playerWidth;
+				scaledVideoHeight = (playerWidth / videoWidth) * videoHeight;
+			}
+		}
+
+		const verticalBlackBarWidth = (playerWidth - scaledVideoWidth) / 2;
+		const horizontalBlackBarHeight = (playerHeight - scaledVideoHeight) / 2;
+
+		const widthOffsetPercent = (verticalBlackBarWidth / playerWidth * 100);
+		const heightOffsetPercent = (horizontalBlackBarHeight / playerHeight * 100);
+
+		const widthMultiplier = (scaledVideoWidth / playerWidth);
+		const heightMultiplier = (scaledVideoHeight / playerHeight);
+
+		for (const annotation of annotations) {
+			const el = annotation.__element;
+
+			let ax = annotation.x;
+			let ay = annotation.y;
+			let aw = annotation.width;
+			let ah = annotation.height;
+
+			el.style.left = `${widthOffsetPercent + (ax * widthMultiplier)}%`;
+			// el.style.left = `${ax}%`;
+			el.style.top = `${heightOffsetPercent + (ay * heightMultiplier)}%`;
+
+			el.style.width = `${aw * widthMultiplier}%`;
+			// el.style.width = `${aw}%`;
+			el.style.height = `${ah * heightMultiplier}%`;
+
+			this.updateAnnotationTextSize(annotation, scaledVideoHeight);
+			this.updateCloseSize(scaledVideoHeight);
+		}
+	}
+
+	updateAllAnnotationSizes() {
+		if (this.playerOptions && this.playerOptions.getOriginalVideoWidth && this.playerOptions.getOriginalVideoHeight) {
+			const videoWidth = this.playerOptions.getOriginalVideoWidth();
+			const videoHeight = this.playerOptions.getOriginalVideoHeight();
+			this.updateAnnotationDimensions(this.annotations, videoWidth, videoHeight);
+		}
+		else {
+			const playerWidth = this.container.getBoundingClientRect().width;
+			const playerHeight = this.container.getBoundingClientRect().height;
+			this.updateAnnotationDimensions(this.annotations, playerWidth, playerHeight);
+		}
 	}
 
 	hideAll() {
@@ -548,6 +603,12 @@ function youtubeAnnotationsPlugin(options) {
 		},
 		seekTo(seconds) {
 			player.currentTime(seconds);
+		},
+		getOriginalVideoWidth() {
+			return player.videoWidth();
+		},
+		getOriginalVideoHeight() {
+			return player.videoHeight();
 		}
 	};
 
@@ -560,8 +621,7 @@ function setupEventListeners(player, renderer) {
 	if (!player) throw new Error("A video player must be provided");
 	// should be throttled for performance
 	window.addEventListener("resize", e => {
-		renderer.updateTextSize();
-		renderer.updateCloseSize();
+		renderer.updateAllAnnotationSizes(renderer.annotations);
 	});
 
 	player.on("pause", e => {
@@ -577,3 +637,11 @@ function setupEventListeners(player, renderer) {
 		renderer.update();
 	});
 }
+
+const styles = document.createElement("style");
+styles.textContent = `
+.vjs-control-bar {
+	z-index: 21;
+}
+`;
+document.body.append(styles);

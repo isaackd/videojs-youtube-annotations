@@ -17,6 +17,12 @@ function youtubeAnnotationsPlugin(options) {
 		},
 		seekTo(seconds) {
 			player.currentTime(seconds);
+		},
+		getOriginalVideoWidth() {
+			return player.videoWidth();
+		},
+		getOriginalVideoHeight() {
+			return player.videoHeight();
 		}
 	};
 
@@ -29,8 +35,7 @@ function setupEventListeners(player, renderer) {
 	if (!player) throw new Error("A video player must be provided");
 	// should be throttled for performance
 	window.addEventListener("resize", e => {
-		renderer.updateTextSize();
-		renderer.updateCloseSize();
+		renderer.updateAllAnnotationSizes(renderer.annotations);
 	});
 
 	player.on("pause", e => {
@@ -46,3 +51,11 @@ function setupEventListeners(player, renderer) {
 		renderer.update();
 	});
 }
+
+const styles = document.createElement("style");
+styles.textContent = `
+.vjs-control-bar {
+	z-index: 21;
+}
+`;
+document.body.append(styles);
