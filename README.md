@@ -24,3 +24,15 @@ video.ready(() => {
     video.youtubeAnnotationsPlugin({annotationXml, videoContainer});
 });
 ```
+
+## Click Events
+
+Each time an annotation that has a link attached to it is clicked, the event `__ar_annotation_click` is fired on `window`, with `e.detail.url` set to the url.
+```javascript
+window.addEventListener("__ar_annotation_click", e => {
+    const url = e.detail.url;
+    // redirect to the url
+    window.location.href = url;
+    // or provide a custom redirect
+    // window.location.href = `www.example.com/redirect?url=${url}`;
+});
