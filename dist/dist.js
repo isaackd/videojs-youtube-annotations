@@ -612,6 +612,7 @@ function youtubeAnnotationsPlugin(options) {
 		}
 	};
 
+	raiseControls();
 	const renderer = new AnnotationRenderer(annotations, videoContainer, playerOptions, options.updateInterval);
 	setupEventListeners(player, renderer);
 	renderer.start();
@@ -638,10 +639,12 @@ function setupEventListeners(player, renderer) {
 	});
 }
 
-const styles = document.createElement("style");
-styles.textContent = `
-.vjs-control-bar {
-	z-index: 21;
+function raiseControls() {
+	const styles = document.createElement("style");
+	styles.textContent = `
+	.vjs-control-bar {
+		z-index: 21;
+	}
+	`;
+	document.body.append(styles);
 }
-`;
-document.body.append(styles);
