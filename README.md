@@ -28,6 +28,8 @@ video.ready(() => {
 ## Click Events
 
 Each time an annotation that has a link attached to it is clicked, the event `__ar_annotation_click` is fired on `window`, with `e.detail.url` set to the url.
+
+`e.detail` also includes `seconds` if the link that was clicked on is a video with a timestamp hash (`#t=38s`).
 ```javascript
 window.addEventListener("__ar_annotation_click", e => {
     const url = e.detail.url;
