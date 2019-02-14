@@ -1,5 +1,5 @@
-cat src/annotationlib/AnnotationParser.js src/annotationlib/AnnotationRenderer.js src/index.js > dist/dist.js
-cat src/annotationlib/AnnotationRenderer.css > dist/dist.css
+cat src/annotationlib/dist/AnnotationParser.js <(echo) src/annotationlib/dist/AnnotationRenderer.js <(echo) src/index.js > dist/dist.js
+cat src/annotationlib/dist/AnnotationRenderer.css > dist/dist.css
 
-uglifyjs dist/dist.js > dist/dist.min.js
-uglifycss dist/dist.css > dist/dist.min.css
+terser dist/dist.js -o dist/dist.min.js
+csso dist/dist.css -o dist/dist.min.css
