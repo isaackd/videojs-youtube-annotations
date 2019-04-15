@@ -35,7 +35,11 @@ function youtubeAnnotationsPlugin(options) {
 function setupEventListeners(player, renderer) {
 	if (!player) throw new Error("A video player must be provided");
 	// should be throttled for performance
-	window.addEventListener("resize", e => {
+	player.on("playerresize", e => {
+		renderer.updateAllAnnotationSizes(renderer.annotations);
+	});
+	// Trigger resize since the video can have different dimensions than player
+	player.one("loadedmetadata", e => {
 		renderer.updateAllAnnotationSizes(renderer.annotations);
 	});
 
