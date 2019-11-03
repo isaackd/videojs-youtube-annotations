@@ -38,3 +38,4 @@ window.addEventListener("__ar_annotation_click", e => {
     // or provide a custom redirect
     // window.location.href = `www.example.com/redirect?url=${url}`;
 });
+```
